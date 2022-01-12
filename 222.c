@@ -18,6 +18,20 @@ typedef struct user {
 USER member[MAX_MEMBER] = { 0, };
 int COUNT=0;
 
+
+long Datecal(int y, int m, int d){
+    int months[]={31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    int i;
+    long total=0L;
+    total=(y-1)*365L+(y-1)/4-(y-1)/100+(y-1)/400;
+    if(!(y%4) && y%100 || !(y%400))
+        months[1]++;
+    for(i=0;i<m-1;i++)
+    total += months[i];
+    total+=d;
+    return total;
+}
+
 void Savefile(){
 	int i;
 	FILE *fp=fopen("data.txt", "w");
@@ -493,13 +507,15 @@ void Usersearch() {
 
 void Userdelete() {
 	system("cls");
-	int i, j, k, o, x = 1, y = 1, n, m;
+	int i, j, k, o, x = 1, y = 1, n, m, year, month, day, sy, sm, sd;
 	char searchname[20];
 	char searchnumber[20];
 	int money, moneydate;
 	char deletedate[8];
 	char answer;
     char temp[100];
+    char ttemp[100];
+    long dates;
 	
 	gotoxy(x, y);
 	printf("┌");
@@ -546,26 +562,50 @@ void Userdelete() {
 					case 1:
 						money=3;
 						moneydate=30;
+						break;
 					case 2:
 						money=8;
 						moneydate=90;
+						break;
 					case 3:
 						money=15;
 						moneydate=180;
+						break;
 					default :
 						money=25;
 						moneydate=360;
+						break;
 				}
 				if (!strcmp(searchname, member[k].name)) {
 					strncpy(temp, member[k].number+7, 4);
+					strncpy(ttemp, member[k].date+0, 4);
+					year=atoi(ttemp);
+					strset(ttemp, '\0');
+					strncpy(ttemp, member[k].date+4, 2);
+					month=atoi(ttemp);
+					strset(ttemp, '\0');
+					strncpy(ttemp, member[k].date+6, 2);
+					day=atoi(ttemp);
+					strset(ttemp, '\0');
 					if (!strcmp(searchnumber, temp)) {
 						gotoxy(5, i + 7);
 						printf("탈퇴일");
 						gotoxy(15, i + 7);
 						scanf("%s", deletedate);
 						fflush(stdin); 
+						strncpy(ttemp, deletedate+0, 4);
+						sy=atoi(ttemp);
+						strset(ttemp, '\0');
+						strncpy(ttemp, deletedate+4, 2);
+						sm=atoi(ttemp);
+						strset(ttemp, '\0');
+						strncpy(ttemp, deletedate+6, 2);
+						sd=atoi(ttemp);
+						
+					    dates=Datecal(sy, sm, sd) - Datecal(year, month, day);
+					    
 						gotoxy(5, i + 8);
-						printf("이용일 : 1일");
+						printf("이용일 : %ld일", dates);
 						gotoxy(2, i+10);
 						printf("┌");
 						for (j = 0; j < 48; j++) {
@@ -598,19 +638,18 @@ void Userdelete() {
 						scanf("%c", &answer);
 						fflush(stdin); 
 						if(answer == 'Y'){
+							gotoxy(4, i+16);
+							printf("%d원 = %d만원 - ( %d원 + %d원)", (money*10000)-(((dates/moneydate)*(money*10000))+((money*10000)/10)), money, (dates/moneydate)*(money*10000), (money*10000)/10);
+							gotoxy(4, i+17);
+							printf("%d원 = ( %ld일 / %d일) * %d만원", (dates/moneydate)*(money*10000), dates, moneydate, money);
+							gotoxy(4, i+18);
+							printf("%d원 환불 되었습니다.", (money*10000)-(((dates/moneydate)*(money*10000))+((money*10000)/10)));
+							gotoxy(4, i+19);
+							printf("%s 회원님의 정보가 삭제되었습니다", member[k].name);
 							for(j=k; j<COUNT-1; j++){
 								member[j] = member[j+1];
 							}
 							COUNT--;
-							
-							gotoxy(4, i+16);
-							printf("134167원 = 15만원 - (833원 + 15000원)");
-							gotoxy(4, i+17);
-							printf("833원 = (1일 / 180일) * 15만원");
-							gotoxy(4, i+18);
-							printf("13만 4167원 환불 되었습니다.");
-							gotoxy(4, i+19);
-							printf("김창희 회원님의 정보가 삭제되었습니다");
 						}
 					}
 				}
